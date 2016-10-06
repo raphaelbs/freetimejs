@@ -1,7 +1,7 @@
 let async = require('async');
 let assert = require('assert');
-
 let databases;
+
 /**
  * Inicializador das conexões com o banco de dados
  * @param  {Array}   asyncDatabases [Array com os modelos descritivos do banco de dados para o pool assincrono]
@@ -9,24 +9,12 @@ let databases;
  */
 let init = function(asyncDatabases, callback){
 	async.parallel(asyncDatabases, function(err, results){
+		if(err) return callback(err);
 		databases = results;
-		callback();
+		callback(null, results);
 	});
 };
-/**
- * Busca banco de dados pelo nome. Mesmo nome descrito no modelo do banco de dados ('dbs.js').
- * @param  {String} name [Nome do banco a ser pesquisado]
- * @return {Mongo.DB}      [Instancia do banco de dados]
- */
-let getDatabase = function(name){
-	if(name === undefined) return databases[0].db;
-	for(let i=0; i < databases.length; i++){
-		if(databases[i].name === name)
-			return databases[i].db;
-	}
-	console.error('Não foi possível encontrar o DB requerido!');
-	process.exit(1);
-};
+
 
 /**
  * Disponibiliza operações CRUD para centralizar grande parte das personalizações com BD.
@@ -65,7 +53,20 @@ let crudOps = {
 		assert.notEqual(callback, undefined);
 		return collection.deleteOne(filter, {w : 1}, callback);
 	},
-	get : getDatabase
+	/**
+	 * Busca banco de dados pelo nome. Mesmo nome descrito no modelo do banco de dados ('dbs.js').
+	 * @param  {String} name [Nome do banco a ser pesquisado]
+	 * @return {Mongo.DB}      [Instancia do banco de dados]
+	 */
+	get : function(name){
+		if(name === undefined) return databases[0].db;
+		for(let i=0; i < databases.length; i++){
+			if(databases[i].name === name)
+				return databases[i].db;
+		}
+		console.error('Não foi possível encontrar o DB requerido!');
+		process.exit(1);
+	}
 }
 
 module.exports = function(asyncDatabases, callback){

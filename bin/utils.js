@@ -3,7 +3,7 @@
  */
 var fs = require('fs');
 var path = require('path');
-var FreeTime = require('../freetime');
+var freetimejs = require('../freetime').options;
 
 /**
  * Retorna apenas o nome do host (sem protocolo)
@@ -30,14 +30,9 @@ exports.completehost = function completehost_Utils(req) {
  */
 exports.allowCrossDomain = function (req, res, next) {
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', (req.secure ? 'https://' : 'http://') + (FreeTime.Server.allowCrossDomain.url || exports.host(req)) + ':' + FreeTime.Server.allowCrossDomain.getPort(req.secure)); // TODO : posteriormente deixar apenas FreeTime.Server.allowCrossDomain.url
-    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Origin', (req.secure ? 'https://' : 'http://') + (freetimejs.server.allowCrossDomain.url || exports.host(req)) + ':' + freetimejs.server.allowCrossDomain.getPort(req.secure));
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    //res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 };
 
@@ -45,27 +40,27 @@ exports.allowCrossDomain = function (req, res, next) {
  * Retorna o conteudo da pasta de ajuda (para complementar o menu de ajuda automaticamente)
  * @returns {[]} - Array contendo nomes dos arquivos.
  */
-exports.searchHelpFolder = (function searchHelpFolder_Utils() {
+exports.searchHelpFolder = function searchHelpFolder_Utils(paths) {
     console.error('Gerando links de ajuda..');
     console.error('**com modelo**');
     var genHelps = [];
-    var help = fs.readdirSync(path.join(__dirname, '..', '..', 'models'));
+    var help = fs.readdirSync(paths.models);
     for (var i = 0; i < help.length; i++) {
         var fileName = help[i];
         console.error('→' + fileName);
-        var fileObj = require(path.join(__dirname, '..', '..', 'models', fileName));
+        var fileObj = require(path.join(paths.models, fileName));
         genHelps.push({name: fileObj.name, link: fileObj.link});
     }
 
     console.error('**sem modelo**');
-    var wmodel = fs.readdirSync(path.join(__dirname, '..', '..', 'data', 'jsons', 'wmodel'));
+    var wmodel = fs.readdirSync(paths.wmodel);
     for (var i = 0; i < wmodel.length; i++) {
         var m = wmodel[i].split('.')[0];
         console.error('→' + m);
         genHelps.push({name: m, link: m});
     }
     return genHelps;
-})();
+};
 
 /**
  * Retorna um objeto JSON contendo informações comuns à todas páginas que devem ser renderizadas.
@@ -77,27 +72,10 @@ exports.getDefaultRenderContent = function getDefaultRenderContent_Utils(req) {
         host: exports.host(req),
         completehost: exports.completehost(req),
         helpFolder: exports.searchHelpFolder,
-        httpport: FreeTime.Server.thisServer.http,
-        httpsport: FreeTime.Server.thisServer.https
+        httpport: freetimejs.server.thisServer.http,
+        httpsport: freetimejs.server.thisServer.https
     };
 };
-
-// Comum - Retorna distância entre dois pontos terrestres
-var distanceFrom2Points = function (pos1, pos2) {
-    var R = 6371; // Radius of the earth in km
-    var dLat = deg2rad(pos1.lat - pos2.lat);
-    var dLon = deg2rad(pos1.lng - pos2.lng);
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(pos1.lat)) * Math.cos(deg2rad(pos2.lat)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c; // Distance in km
-    return d;
-};
-// Comum - Transforma graus em radianos
-function deg2rad(deg) {
-    return deg * (Math.PI / 180);
-}
 
 // Mensagens padrões do método de conferência.
 exports.ConferenceMSGS =

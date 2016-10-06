@@ -1,31 +1,24 @@
 let model = require('./model');
-let params = require('./params');
 
-let asyncDatabases = [
-	function(callback){
-		model({name: 'data', url : params.url}, callback);
-	},
-	function(callback){
-		model({name: 'application', url : params.url}, callback);
-	},
-	function(callback){
-		model({name: 'generated', url : params.url}, callback);
-	},
-	function(callback){
-		model({name: 'files', url : params.url}, callback);
-	},
-	function(callback){
-		model({name: 'rented', url : params.url}, callback);
-	},
-	function(callback){
-		model({name: 'history', url : params.url}, callback);
-	}
-];
+let asyncDatabases = [];
+function insertDb(db){
+	asyncDatabases.push(
+		function(callback){
+			model(db, callback); //name, url
+		}
+	);
+}
 
-let crud = require('./crud');
+function sortDatabases(databases){
+	databases.forEach(function(db){
+		insertDb(db);
+	});
+	return asyncDatabases;
+}
+
 let crudOps = {
-	init : function(callback){
-		let ncrud = crud(asyncDatabases, callback);
+	init : function(databases, callback){
+		let ncrud = require('./crud')(sortDatabases(databases), callback);
 		for(let key in ncrud)
 			crudOps[key] = ncrud[key];
 	}
