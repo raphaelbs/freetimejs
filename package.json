@@ -1,6 +1,6 @@
 {
   "name": "freetimejs",
-  "version": "0.0.0",
+  "version": "0.1.0-0",
   "dependencies": {
     "assert": "^1.4.1",
     "async": "^2.0.1",
