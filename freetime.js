@@ -4,12 +4,13 @@
 exports.init = function(options, callback){
 	exports.options = options;
 	exports.Utils = require('./bin/utils');
-	exports.Utils.searchHelpFolder(options.paths);
+	exports.Utils.searchHelpFolder = exports.Utils.initHelpFolder(options.paths);
 
 	exports.CRUD = require('./bin/CRUD/controller');
 	exports.DB = require('./bin/db/dbs');
 	exports.ObjectId = require('mongodb').ObjectID;
 	exports.Router = require('./bin/CRUD/rest');
-	exports.Multer = require('./bin/Multer/params');
+	if(options.multer) exports.Multer = require('./bin/Multer/params');
 	exports.DB.init(options.dbs, callback);
+	exports.loader = function(app){ require('./bin/loader')(app); };
 };

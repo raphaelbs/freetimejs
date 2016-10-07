@@ -11,13 +11,13 @@ let modelConnect = function(data, callback){
     let reconnectCount = 0;
     (function connect(){
         reconnectCount++;
-        if(reconnectCount > _reconnect.attempts) return console.error('Mongo failed to connect: ' + _url);
-        console.error('Mongo trying to connect: ' + _url);
+        if(reconnectCount > _reconnect.attempts) return console.error('Mongo falhou ao conectar: ' + _url);
+        console.error('Mongo tentando se conectar: ' + _url);
         MongoClient.connect(_url, function(err, db){
             if(err) {
                 return setTimeout(connect, _reconnect.timeout);
             }else{
-                console.error('Mongo connected: ' + _url);
+                console.error('Mongo conectou-se: ' + _url);
                 return callback(db);
             }
         });

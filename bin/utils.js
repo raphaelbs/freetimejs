@@ -29,6 +29,7 @@ exports.completehost = function completehost_Utils(req) {
  * @param res - response
  */
 exports.allowCrossDomain = function (req, res, next) {
+	if(!freetimejs.server.allowCrossDomain) next();
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', (req.secure ? 'https://' : 'http://') + (freetimejs.server.allowCrossDomain.url || exports.host(req)) + ':' + freetimejs.server.allowCrossDomain.getPort(req.secure));
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -40,23 +41,26 @@ exports.allowCrossDomain = function (req, res, next) {
  * Retorna o conteudo da pasta de ajuda (para complementar o menu de ajuda automaticamente)
  * @returns {[]} - Array contendo nomes dos arquivos.
  */
-exports.searchHelpFolder = function searchHelpFolder_Utils(paths) {
+exports.initHelpFolder = function(paths) {
     console.error('Gerando links de ajuda..');
-    console.error('**com modelo**');
     var genHelps = [];
+
+	if(!paths.models) return genHelps;
+	console.error('**com modelo**');
     var help = fs.readdirSync(paths.models);
     for (var i = 0; i < help.length; i++) {
         var fileName = help[i];
-        console.error('→' + fileName);
+        console.error(' →\t' + fileName);
         var fileObj = require(path.join(paths.models, fileName));
         genHelps.push({name: fileObj.name, link: fileObj.link});
     }
 
+	if(!paths.wmodel) return genHelps;
     console.error('**sem modelo**');
     var wmodel = fs.readdirSync(paths.wmodel);
     for (var i = 0; i < wmodel.length; i++) {
         var m = wmodel[i].split('.')[0];
-        console.error('→' + m);
+        console.error(' →\t' + m);
         genHelps.push({name: m, link: m});
     }
     return genHelps;
