@@ -198,3 +198,20 @@ exports.TimerBlock = function (time, done, waiting) {
         time = ntime;
     };
 };
+
+
+/**
+ * [ChecarReqBody]
+ * Checa os parâmetros que vem do req.body.
+ * @param {request}   	req      requisição diretamente da rota
+ * @param {array}   	array    array com atributos a serem encontrados
+ * @param {Function} 	callback função de callback(err)
+ */
+exports.ChecarReqBody = function(req, array, callback){
+	let naoEncontrados = [];
+	for(let attr of array)
+		if(req.body[attr]===undefined)
+			naoEncontrados.push(attr);
+	if(naoEncontrados.length===0) return callback();
+	callback('Parâmetro(s) ['+ naoEncontrados +'] não encontrado(s) no body da requisição.');
+};
